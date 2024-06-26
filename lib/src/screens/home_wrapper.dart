@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:mad3_submission_1/src/screens/account_screen.dart';
 import 'package:mad3_submission_1/src/screens/home_screen.dart';
+
+import '../routing/router.dart';
 
 class HomeWrapper extends StatefulWidget {
   final Widget? child;
@@ -25,7 +26,7 @@ class _HomeWrapperState extends State<HomeWrapper> {
         onTap: (i) {
           setState(() {
             index = i;
-            GoRouter.of(context).go(routes[i]);
+            GlobalRouter.I.router.go(routes[i]);
           });
         },
         items: const [
