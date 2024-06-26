@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:mad3_submission_1/src/controllers/auth_controller.dart';
+import 'package:mad3_submission_1/src/dialogs/waiting_dialog.dart';
+import 'package:mad3_submission_1/src/routing/router.dart';
+import 'package:mad3_submission_1/src/screens/login_screen.dart';
 
 class AccountScreen extends StatelessWidget {
   static const String route = '/account';
@@ -12,9 +16,28 @@ class AccountScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Account"),
       ),
-      body: const SafeArea(
-        child: Center(child: Text("Account Screen")),
+      body: SafeArea(
+        child: Center(
+            child: ElevatedButton(
+                onPressed: () => logoutUser(context),
+                child: const Text("Log out"))),
       ),
+    );
+  }
+
+  void logoutUser(BuildContext context) {
+    WaitingDialog.show(
+      context,
+      future: AuthController.I.logout(),
+      prompt: "Logging out. . .",
+    ).then((value) {
+      GlobalRouter.I.router.go(LoginScreen.route);
+    }).catchError(
+      (error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Logout failed: $error')),
+        );
+      },
     );
   }
 }
