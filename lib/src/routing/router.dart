@@ -21,74 +21,63 @@ class GlobalRouter {
   late GlobalKey<NavigatorState> _rootNavigatorKey;
   late GlobalKey<NavigatorState> _shellNavigatorKey;
 
+  GlobalRouter() {
+    _rootNavigatorKey = GlobalKey<NavigatorState>();
+    _shellNavigatorKey = GlobalKey<NavigatorState>();
+    router = GoRouter(
+      navigatorKey: _rootNavigatorKey,
+      initialLocation: LoginScreen.route,
+      redirect: handleRedirect,
+      refreshListenable: AuthController.instance,
+      routes: [
+        GoRoute(
+          path: LoginScreen.route,
+          builder: (context, state) {
+            return const LoginScreen();
+          },
+        ),
+        ShellRoute(
+          navigatorKey: _shellNavigatorKey,
+          routes: [
+            GoRoute(
+              path: HomeScreen.route,
+              builder: (context, state) {
+                return const HomeScreen();
+              },
+            ),
+            GoRoute(
+              path: AccountScreen.route,
+              builder: (context, state) {
+                return const AccountScreen();
+              },
+            ),
+          ],
+          builder: (context, state, child) {
+            if (AuthController.instance.state == AuthState.authenticated) {
+              return HomeWrapper(
+                child: child,
+              );
+            } else {
+              return const SizedBox.shrink();
+            }
+          },
+        ),
+      ],
+    );
+  }
+
   Future<String?> handleRedirect(
       BuildContext context, GoRouterState state) async {
-    if (AuthController.I.state == AuthState.authenticated) {
+    if (AuthController.instance.state == AuthState.authenticated) {
       if (state.matchedLocation == LoginScreen.route) {
         return HomeScreen.route;
       }
       return null;
-    }
-    if (AuthController.I.state != AuthState.authenticated) {
+    } else {
       if (state.matchedLocation == LoginScreen.route) {
         return null;
       }
       return LoginScreen.route;
     }
-    return null;
-  }
-
-  GlobalRouter() {
-    _rootNavigatorKey = GlobalKey<NavigatorState>();
-    _shellNavigatorKey = GlobalKey<NavigatorState>();
-    router = GoRouter(
-        navigatorKey: _rootNavigatorKey,
-        initialLocation: LoginScreen.route,
-        redirect: handleRedirect,
-        refreshListenable: AuthController.I,
-        routes: [
-          GoRoute(
-            parentNavigatorKey: _rootNavigatorKey,
-            path: LoginScreen.route,
-            name: LoginScreen.name,
-            builder: (context, state) {
-              return const LoginScreen();
-            },
-          ),
-          ShellRoute(
-            navigatorKey: _shellNavigatorKey,
-            routes: [
-              GoRoute(
-                parentNavigatorKey: _shellNavigatorKey,
-                path: HomeScreen.route,
-                name: HomeScreen.name,
-                builder: (context, state) {
-                  return const HomeScreen();
-                },
-              ),
-              GoRoute(
-                parentNavigatorKey: _shellNavigatorKey,
-                path: AccountScreen.route,
-                name: AccountScreen.name,
-                builder: (context, state) {
-                  return const AccountScreen();
-                },
-              ),
-            ],
-            builder: (context, state, child) {
-              return HomeWrapper(
-                child: child,
-              );
-            },
-          ),
-          // GoRoute(
-          //   parentNavigatorKey: _rootNavigatorKey,
-          //   path: AccountScreen.route,
-          //   name: AccountScreen.name,
-          //   builder: (context, state) {
-          //     return const AccountScreen();
-          //   },
-          // )
-        ]);
   }
 }

@@ -4,9 +4,15 @@ import 'package:mad3_submission_1/src/routing/router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize AuthController and load session
   AuthController.initialize();
+  await AuthController.instance.loadSession();
+
+  // Initialize router after session is loaded
   GlobalRouter.initialize();
-  await AuthController.I.loadSession();
+
+  // Run the app
   runApp(const MyApp());
 }
 
@@ -16,7 +22,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      routerConfig: GlobalRouter.I.router,
+      routerConfig: GlobalRouter.instance.router,
       debugShowCheckedModeBanner: false,
       title: 'MAD3 Submission 1 Cena Pueblos',
       theme: ThemeData(

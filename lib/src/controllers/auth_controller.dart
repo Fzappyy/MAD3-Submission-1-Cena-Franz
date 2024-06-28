@@ -1,45 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mad3_submission_1/src/enum/enum.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthController with ChangeNotifier {
-  // Static method to initialize the singleton in GetIt
   static void initialize() {
     GetIt.instance.registerSingleton<AuthController>(AuthController());
   }
 
-  // Static getter to access the instance through GetIt
   static AuthController get instance => GetIt.instance<AuthController>();
 
   static AuthController get I => GetIt.instance<AuthController>();
 
   AuthState state = AuthState.unauthenticated;
   SimulatedAPI api = SimulatedAPI();
+  SharedPreferences? _prefs;
 
-  login(String userName, String password) async {
+  AuthController() {
+    _initPrefs();
+  }
+
+  Future<void> _initPrefs() async {
+    _prefs = await SharedPreferences.getInstance();
+    _loadSessionFromPrefs();
+  }
+
+  void _loadSessionFromPrefs() {
+    bool isLoggedIn = _prefs?.getBool('isLoggedIn') ?? false;
+    state = isLoggedIn ? AuthState.authenticated : AuthState.unauthenticated;
+    notifyListeners();
+  }
+
+  Future<void> login(String userName, String password) async {
     bool isLoggedIn = await api.login(userName, password);
     if (isLoggedIn) {
       state = AuthState.authenticated;
-      //should store session
-
+      await _prefs?.setBool('isLoggedIn', true);
       notifyListeners();
     }
   }
 
-  ///write code to log out the user and add it to the home page.
   Future<void> logout() async {
     await Future.delayed(const Duration(seconds: 2));
     state = AuthState.unauthenticated;
+    await _prefs?.remove('isLoggedIn');
     notifyListeners();
   }
 
-  ///must be called in main before runApp
-  ///
-  loadSession() async {
-    //check secure storage method
+  Future<void> loadSession() async {
+    if (_prefs == null || !_prefs!.containsKey('isLoggedIn')) {
+      await _initPrefs();
+    }
+    _loadSessionFromPrefs();
   }
-
-  ///https://pub.dev/packages/flutter_secure_storage or any caching dependency of your choice like localstorage, hive, or a db
 }
 
 class SimulatedAPI {
